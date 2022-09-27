@@ -14,6 +14,7 @@ class MasterMind
     @dic_color = { Color: '', Exists: false, Position: 'Incorrect' }
   end
 
+  # Gets pc choices and assigns values to an auxiliar array for pc choices
   def pc_choices
     5.times do
       @pc_chosen_colors.push(@colors[rand(0..5)])
@@ -21,6 +22,8 @@ class MasterMind
     @pc_chosen_colors.each { |value| @aux_pc_chosen_colors.push(value) }
   end
 
+  # Gets user choices and assigns values to an auxiliar array for user choices
+  # User's array will be modify after each round is being called
   def user_choice
     n = 0
     while n < 5
@@ -36,8 +39,21 @@ class MasterMind
   end
 
   def round
-    @user_chosen_colors.each_with_index do |color, i|
-      next unless color == @pc_chosen_colors[i]
+    check_values_in_equal_index
+    check_remainder_values_unequal_index
+
+    @pc_chosen_colors = []
+    @user_chosen_colors = []
+    @aux_pc_chosen_colors.each { |value| @pc_chosen_colors.push(value) }
+    @aux_user_chosen_colors.each { |value| @user_chosen_colors.push(value) }
+  end
+
+  # Check same index value from @pc_chosen_colors && @user_chosen_colors
+  # If the values are equal, they are eliminated
+  # Information is saved in @guess for feedback
+  def check_values_in_equal_index
+    @aux_user_chosen_colors.each_with_index do |color, i|
+      next unless color == @aux_pc_chosen_colors[i]
 
       @dic_color[:Color] = color
       @dic_color[:Exists] = true
@@ -47,24 +63,21 @@ class MasterMind
       @pc_chosen_colors.delete_at(@pc_chosen_colors.find_index(color))
       @user_chosen_colors.delete_at(@user_chosen_colors.find_index(color))
     end
-    p 'Before enter user that iterates'
-    p @user_chosen_colors
+  end
+
+  # Check remainder values from @pc_chosen_colors && @user_chosen_colors
+  # It does not consider same index in this case
+  # Information is saved in @guess for feedback
+  def check_remainder_values_unequal_index
     @user_chosen_colors.each do |color|
       @dic_color[:Color] = color
       if @pc_chosen_colors.include?(color)
         @dic_color[:Exists] = true
-        @guess.push(@dic_color)
-        @dic_color = { Color: '', Exists: false, Position: 'Incorrect' }
         @pc_chosen_colors.delete_at(@pc_chosen_colors.find_index(color))
-      else
-        @guess.push(@dic_color)
-        @dic_color = { Color: '', Exists: false, Position: 'Incorrect' }
       end
+      @guess.push(@dic_color)
+      @dic_color = { Color: '', Exists: false, Position: 'Incorrect' }
     end
-    @pc_chosen_colors = []
-    @user_chosen_colors = []
-    @aux_pc_chosen_colors.each { |value| @pc_chosen_colors.push(value) }
-    @aux_user_chosen_colors.each { |value| @user_chosen_colors.push(value) }
   end
 
   def game
