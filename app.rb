@@ -82,31 +82,25 @@ class MasterMind
 
   def game
     pc_choices
-    user_win = false
     12.times do
       user_choice
       round
-      if @user_chosen_colors == @pc_chosen_colors
-        puts 'You Win!'
-        user_win = true
-        break
-      else
-        puts
-        puts
-        puts
-        print 'user: '
-        p @user_chosen_colors
-        puts
-        print 'pc: '
-        p @pc_chosen_colors
-        puts
-        puts "Guess: \n\n#{@guess} \n\n Try again\n\n"
-        @guess = []
-        @user_chosen_colors = []
-        @aux_user_chosen_colors = []
-      end
+      @user_chosen_colors == @pc_chosen_colors ? break : print_round_results
     end
-    puts 'You lost!' unless user_win
+    puts @user_chosen_colors == @pc_chosen_colors ? 'You Win!' : 'You lost!'
+  end
+
+  def print_round_results
+    # print 'user: '
+    # p @user_chosen_colors
+    # puts
+    # print 'pc: '
+    # p @pc_chosen_colors
+    # puts
+    puts "Guess: \n\n#{@guess} \n\n Try again\n\n"
+    @guess = []
+    @user_chosen_colors = []
+    @aux_user_chosen_colors = []
   end
 end
 
