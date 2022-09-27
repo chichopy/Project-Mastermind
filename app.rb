@@ -102,7 +102,22 @@ class MasterMind
     @user_chosen_colors = []
     @aux_user_chosen_colors = []
   end
+
+  def select_mode
+    while true
+      puts 'Enter "user" (cero) to guess colors chosen by the computer'
+      puts 'Enter "computer" (one) to choose colors and make computer guess'
+      mode = gets.chomp.upcase
+      puts mode
+      break if %w[USER COMPUTER].include?(mode)
+    end
+    mode == 'USER' ? game : computer
+  end
+
+  def computer
+    puts 'working'
+  end
 end
 
 matrix = MasterMind.new
-matrix.game
+matrix.select_mode
