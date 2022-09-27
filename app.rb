@@ -80,7 +80,7 @@ class MasterMind
     end
   end
 
-  def game
+  def game_user_mode
     pc_choices
     12.times do
       user_choice
@@ -91,8 +91,9 @@ class MasterMind
   end
 
   def print_round_results
-    # print 'user: '
-    # p @user_chosen_colors
+    puts
+    print 'user: '
+    p @user_chosen_colors
     # puts
     # print 'pc: '
     # p @pc_chosen_colors
@@ -105,16 +106,15 @@ class MasterMind
 
   def select_mode
     while true
-      puts 'Enter "user" (cero) to guess colors chosen by the computer'
-      puts 'Enter "computer" (one) to choose colors and make computer guess'
+      puts 'Enter "user" to guess colors chosen by the computer'
+      puts 'Enter "computer" to choose colors and make computer guess'
       mode = gets.chomp.upcase
-      puts mode
       break if %w[USER COMPUTER].include?(mode)
     end
-    mode == 'USER' ? game : computer
+    mode == 'USER' ? game_user_mode : game_computer_mode
   end
 
-  def computer
+  def game_computer_mode
     puts 'working'
   end
 end
