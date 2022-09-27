@@ -39,8 +39,8 @@ class MasterMind
   end
 
   def round
-    check_values_in_equal_index
-    check_remainder_values_unequal_index
+    check_values_in_equal_index(@aux_user_chosen_colors, @user_chosen_colors, @aux_pc_chosen_colors, @pc_chosen_colors)
+    check_remainder_values_unequal_index(@user_chosen_colors, @pc_chosen_colors)
 
     @pc_chosen_colors = []
     @user_chosen_colors = []
@@ -51,29 +51,29 @@ class MasterMind
   # Check same index value from @pc_chosen_colors && @user_chosen_colors
   # If the values are equal, they are eliminated
   # Information is saved in @guess for feedback
-  def check_values_in_equal_index
-    @aux_user_chosen_colors.each_with_index do |color, i|
-      next unless color == @aux_pc_chosen_colors[i]
+  def check_values_in_equal_index(aux_guess_values, guess_values, aux_correct_values, correct_values)
+    aux_guess_values.each_with_index do |color, i|
+      next unless color == aux_correct_values[i]
 
       @dic_color[:Color] = color
       @dic_color[:Exists] = true
       @dic_color[:Position] = "#{i + 1} Correct"
       @guess.push(@dic_color)
       @dic_color = { Color: '', Exists: false, Position: 'Incorrect' }
-      @pc_chosen_colors.delete_at(@pc_chosen_colors.find_index(color))
-      @user_chosen_colors.delete_at(@user_chosen_colors.find_index(color))
+      correct_values.delete_at(correct_values.find_index(color))
+      guess_values.delete_at(guess_values.find_index(color))
     end
   end
 
   # Check remainder values from @pc_chosen_colors && @user_chosen_colors
   # It does not consider same index in this case
   # Information is saved in @guess for feedback
-  def check_remainder_values_unequal_index
-    @user_chosen_colors.each do |color|
+  def check_remainder_values_unequal_index(guess_values, correct_values)
+    guess_values.each do |color|
       @dic_color[:Color] = color
-      if @pc_chosen_colors.include?(color)
+      if correct_values.include?(color)
         @dic_color[:Exists] = true
-        @pc_chosen_colors.delete_at(@pc_chosen_colors.find_index(color))
+        correct_values.delete_at(correct_values.find_index(color))
       end
       @guess.push(@dic_color)
       @dic_color = { Color: '', Exists: false, Position: 'Incorrect' }
@@ -94,9 +94,9 @@ class MasterMind
     puts
     print 'user: '
     p @user_chosen_colors
-    # puts
-    # print 'pc: '
-    # p @pc_chosen_colors
+    puts
+    print 'pc: '
+    p @pc_chosen_colors
     # puts
     puts "Guess: \n\n#{@guess} \n\n Try again\n\n"
     @guess = []
@@ -115,7 +115,37 @@ class MasterMind
   end
 
   def game_computer_mode
-    puts 'working'
+    user_choice # This time this value is fixed
+    12.times do
+      pc_choices # This values changes a total of 12 times
+      round_computer_mode
+      @user_chosen_colors == @pc_chosen_colors ? break : print_round_results_computer
+    end
+    puts @user_chosen_colors == @pc_chosen_colors ? 'You lost!' : 'You Win!'
+  end
+
+  def print_round_results_computer
+    puts
+    print 'user: '
+    p @user_chosen_colors
+    puts
+    print 'pc: '
+    p @pc_chosen_colors
+    # puts
+    puts "Guess: \n\n#{@guess} \n\n Try again\n\n"
+    @guess = []
+    @pc_chosen_colors = []
+    @aux_pc_chosen_colors = []
+  end
+
+  def round_computer_mode
+    check_values_in_equal_index(@aux_pc_chosen_colors, @pc_chosen_colors, @aux_user_chosen_colors, @user_chosen_colors)
+    check_remainder_values_unequal_index(@pc_chosen_colors, @user_chosen_colors)
+
+    @pc_chosen_colors = []
+    @user_chosen_colors = []
+    @aux_pc_chosen_colors.each { |value| @pc_chosen_colors.push(value) }
+    @aux_user_chosen_colors.each { |value| @user_chosen_colors.push(value) }
   end
 end
 
