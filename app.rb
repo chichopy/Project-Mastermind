@@ -2,20 +2,20 @@
 
 # MasterMind class. Gets computer choice
 class MasterMind
-  attr_accessor :pc_chosen_colors, :guess, :user_chosen_colors
+  # attr_accessor :pc_chosen_colors, :guess, :user_chosen_colors
 
   def initialize
     @colors = %w[BLUE ORANGE PINK RED WHITE YELLOW]
     @pc_chosen_colors = []
-    @aux_pc_chosen_colors = []
+    @aux_pc_chosen_colors = [] # Reassigns pc colors after deleting them while checking
     @user_chosen_colors = []
-    @aux_user_chosen_colors = []
-    @guess = []
+    @aux_user_chosen_colors = [] # Reassigns user colors after deleting them while checking
+    @guess = [] # Displays the guess of the user in an array of dicts
     @dic_color = { Color: '', Exists: false, Position: 'Incorrect' }
-    @helper_pc_color = [nil, nil, nil, nil, nil] # new
+    @count = 1
   end
 
-  # Gets pc choices and assigns values to an auxiliar array for pc choices
+  # Gets random pc choices and assigns values to an auxiliar array
   def pc_choices
     5.times do
       @pc_chosen_colors.push(@colors[rand(0..5)])
@@ -23,7 +23,7 @@ class MasterMind
     @pc_chosen_colors.each { |value| @aux_pc_chosen_colors.push(value) }
   end
 
-  # Gets user choices and assigns values to an auxiliar array for user choices
+  # Gets user choices and assigns values to an auxiliar array
   # User's array will be modify after each round is being called
   def user_choice
     n = 0
@@ -34,7 +34,6 @@ class MasterMind
 
       @user_chosen_colors.push(color)
       puts "\nColors selected: \n#{@user_chosen_colors}"
-      # p @user_chosen_colors
       n += 1
     end
     @user_chosen_colors.each { |value| @aux_user_chosen_colors.push(value) }
@@ -52,6 +51,8 @@ class MasterMind
       @dic_color[:Position] = "#{i + 1} Correct"
       @guess.push(@dic_color)
       @dic_color = { Color: '', Exists: false, Position: 'Incorrect' }
+
+      # Cannot pass 'i' because length chages after deleting. Thus, find_index
       correct_values.delete_at(correct_values.find_index(color))
       guess_values.delete_at(guess_values.find_index(color))
     end
@@ -89,6 +90,7 @@ class UserMode < MasterMind
     check_values_in_equal_index(@aux_user_chosen_colors, @user_chosen_colors, @aux_pc_chosen_colors, @pc_chosen_colors)
     check_remainder_values_unequal_index(@user_chosen_colors, @pc_chosen_colors)
 
+    # Values are erased to reassing auxiliar array values
     @pc_chosen_colors = []
     @user_chosen_colors = []
     @aux_pc_chosen_colors.each { |value| @pc_chosen_colors.push(value) }
@@ -96,35 +98,45 @@ class UserMode < MasterMind
   end
 
   def print_round_results
-    puts "\n\nGuess: \n#{@guess} \n\n Try again\n\n"
+    puts "\n\nGuess ##{@count}: \n#{@guess} \n\n Try again\n\n"
     @guess = []
     @user_chosen_colors = []
     @aux_user_chosen_colors = []
+    @count += 1
   end
 end
 
 # This class is related to all functions that involved user computer mode only
 class ComputerMode < MasterMind
+  def initialize
+    super
+    @helper_pc_color = [nil, nil, nil, nil, nil] # Saves correct guess color after iteration
+  end
+
   def game
     user_choice
     12.times do
       pc_choices
       round_computer_mode
       # If position correct, save the color
-      @guess.each do |dict|
-        next unless dict[:Position][0].to_i.between?(1, 5)
-
-        @helper_pc_color[dict[:Position][0].to_i - 1] = dict[:Color]
-      end
-      @helper_pc_color.each_with_index do |value, i|
-        next if value.nil?
-
-        @pc_chosen_colors[i] = value
-      end
+      add_helper_values
 
       @user_chosen_colors == @pc_chosen_colors ? break : print_round_results_computer
     end
-    puts @user_chosen_colors == @pc_chosen_colors ? 'You lost!' : "You Win! You chose #{@user_chosen_colors}"
+    puts @user_chosen_colors == @pc_chosen_colors ? "You lost! Guess ##{@count}: #{@pc_chosen_colors}" : 'You Win!'
+  end
+
+  def add_helper_values
+    @guess.each do |dict|
+      next unless dict[:Position][0].to_i.between?(1, 5)
+
+      @helper_pc_color[dict[:Position][0].to_i - 1] = dict[:Color]
+    end
+    @helper_pc_color.each_with_index do |value, i|
+      next if value.nil?
+
+      @pc_chosen_colors[i] = value
+    end
   end
 
   def round_computer_mode
@@ -138,10 +150,11 @@ class ComputerMode < MasterMind
   end
 
   def print_round_results_computer
-    puts "Computer guess: \n\n#{@pc_chosen_colors} \n\n"
+    puts "Computer guess ##{@count}: \n\n#{@pc_chosen_colors} \n\n"
     @guess = []
     @pc_chosen_colors = []
     @aux_pc_chosen_colors = []
+    @count += 1
   end
 end
 
