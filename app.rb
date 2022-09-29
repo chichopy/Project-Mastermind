@@ -40,16 +40,6 @@ class MasterMind
     @user_chosen_colors.each { |value| @aux_user_chosen_colors.push(value) }
   end
 
-  def round
-    check_values_in_equal_index(@aux_user_chosen_colors, @user_chosen_colors, @aux_pc_chosen_colors, @pc_chosen_colors)
-    check_remainder_values_unequal_index(@user_chosen_colors, @pc_chosen_colors)
-
-    @pc_chosen_colors = []
-    @user_chosen_colors = []
-    @aux_pc_chosen_colors.each { |value| @pc_chosen_colors.push(value) }
-    @aux_user_chosen_colors.each { |value| @user_chosen_colors.push(value) }
-  end
-
   # Check same index value from @pc_chosen_colors && @user_chosen_colors
   # If the values are equal, they are eliminated
   # Information is saved in @guess for feedback
@@ -81,8 +71,11 @@ class MasterMind
       @dic_color = { Color: '', Exists: false, Position: 'Incorrect' }
     end
   end
+end
 
-  def game_user_mode
+# This class is related to all functions that involved user mode only
+class UserMode < MasterMind
+  def game
     pc_choices
     12.times do
       user_choice
@@ -92,61 +85,46 @@ class MasterMind
     puts @user_chosen_colors == @pc_chosen_colors ? 'You Win!' : "You lost! Computer's colors: #{@pc_chosen_colors}"
   end
 
+  def round
+    check_values_in_equal_index(@aux_user_chosen_colors, @user_chosen_colors, @aux_pc_chosen_colors, @pc_chosen_colors)
+    check_remainder_values_unequal_index(@user_chosen_colors, @pc_chosen_colors)
+
+    @pc_chosen_colors = []
+    @user_chosen_colors = []
+    @aux_pc_chosen_colors.each { |value| @pc_chosen_colors.push(value) }
+    @aux_user_chosen_colors.each { |value| @user_chosen_colors.push(value) }
+  end
+
   def print_round_results
-    # puts "\nuser: "
-    # p @user_chosen_colors
-    # print "\npc: "
-    # p @pc_chosen_colors
-    # puts
     puts "\n\nGuess: \n#{@guess} \n\n Try again\n\n"
     @guess = []
     @user_chosen_colors = []
     @aux_user_chosen_colors = []
   end
+end
 
-  def select_mode
-    while true
-      puts 'Enter "user" to guess colors chosen by the computer'
-      puts 'Enter "computer" to choose colors and make computer guess'
-      mode = gets.chomp.upcase
-      break if %w[USER COMPUTER].include?(mode)
-    end
-    mode == 'USER' ? game_user_mode : game_computer_mode
-  end
-
-  def game_computer_mode
-    user_choice # This time this value is fixed
+# This class is related to all functions that involved user computer mode only
+class ComputerMode < MasterMind
+  def game
+    user_choice
     12.times do
-      pc_choices # This values changes a total of 12 times
+      pc_choices
       round_computer_mode
-      # If position correct save the color
+      # If position correct, save the color
       @guess.each do |dict|
-        next unless dict[:Position][0].to_i.between?(1, 5) # NEW
+        next unless dict[:Position][0].to_i.between?(1, 5)
 
-        @helper_pc_color[dict[:Position][0].to_i] = dict[:Color]
+        @helper_pc_color[dict[:Position][0].to_i - 1] = dict[:Color]
       end
-      # puts "@helper_pc_color = #{@helper_pc_color}"
-      # puts "@pc_chosen_colors = #{@pc_chosen_colors}"
       @helper_pc_color.each_with_index do |value, i|
         next if value.nil?
 
         @pc_chosen_colors[i] = value
       end
-      # puts "@pc_chosen_colors = #{@pc_chosen_colors}"
+
       @user_chosen_colors == @pc_chosen_colors ? break : print_round_results_computer
     end
     puts @user_chosen_colors == @pc_chosen_colors ? 'You lost!' : "You Win! You chose #{@user_chosen_colors}"
-  end
-
-  def print_round_results_computer
-    # puts "\nuser: "
-    # p @user_chosen_colors
-    # print "\npc: "
-    # p @pc_chosen_colors
-    puts "Computer guess: \n\n#{@pc_chosen_colors} \n\n"
-    @guess = []
-    @pc_chosen_colors = []
-    @aux_pc_chosen_colors = []
   end
 
   def round_computer_mode
@@ -158,7 +136,26 @@ class MasterMind
     @aux_pc_chosen_colors.each { |value| @pc_chosen_colors.push(value) }
     @aux_user_chosen_colors.each { |value| @user_chosen_colors.push(value) }
   end
+
+  def print_round_results_computer
+    puts "Computer guess: \n\n#{@pc_chosen_colors} \n\n"
+    @guess = []
+    @pc_chosen_colors = []
+    @aux_pc_chosen_colors = []
+  end
 end
 
-matrix = MasterMind.new
-matrix.select_mode
+def select_mode
+  while true
+    puts 'Enter "user" to guess colors chosen by the computer'
+    puts 'Enter "computer" to choose colors and make computer guess'
+    mode = gets.chomp.upcase
+    break if %w[USER COMPUTER].include?(mode)
+  end
+  mode
+end
+
+mode = select_mode
+matrix = mode == 'USER' ? UserMode.new : ComputerMode.new
+
+matrix.game
