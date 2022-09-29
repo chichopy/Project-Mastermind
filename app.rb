@@ -12,6 +12,7 @@ class MasterMind
     @aux_user_chosen_colors = []
     @guess = []
     @dic_color = { Color: '', Exists: false, Position: 'Incorrect' }
+    @helper_pc_color = [nil, nil, nil, nil, nil] # new
   end
 
   # Gets pc choices and assigns values to an auxiliar array for pc choices
@@ -32,7 +33,8 @@ class MasterMind
       next unless @colors.include?(color)
 
       @user_chosen_colors.push(color)
-      p @user_chosen_colors
+      puts "\nColors selected: \n#{@user_chosen_colors}"
+      # p @user_chosen_colors
       n += 1
     end
     @user_chosen_colors.each { |value| @aux_user_chosen_colors.push(value) }
@@ -87,18 +89,16 @@ class MasterMind
       round
       @user_chosen_colors == @pc_chosen_colors ? break : print_round_results
     end
-    puts @user_chosen_colors == @pc_chosen_colors ? 'You Win!' : 'You lost!'
+    puts @user_chosen_colors == @pc_chosen_colors ? 'You Win!' : "You lost! Computer's colors: #{@pc_chosen_colors}"
   end
 
   def print_round_results
-    puts
-    print 'user: '
-    p @user_chosen_colors
-    puts
-    print 'pc: '
-    p @pc_chosen_colors
+    # puts "\nuser: "
+    # p @user_chosen_colors
+    # print "\npc: "
+    # p @pc_chosen_colors
     # puts
-    puts "Guess: \n\n#{@guess} \n\n Try again\n\n"
+    puts "\n\nGuess: \n#{@guess} \n\n Try again\n\n"
     @guess = []
     @user_chosen_colors = []
     @aux_user_chosen_colors = []
@@ -119,20 +119,31 @@ class MasterMind
     12.times do
       pc_choices # This values changes a total of 12 times
       round_computer_mode
+      # If position correct save the color
+      @guess.each do |dict|
+        next unless dict[:Position][0].to_i.between?(1, 5) # NEW
+
+        @helper_pc_color[dict[:Position][0].to_i] = dict[:Color]
+      end
+      # puts "@helper_pc_color = #{@helper_pc_color}"
+      # puts "@pc_chosen_colors = #{@pc_chosen_colors}"
+      @helper_pc_color.each_with_index do |value, i|
+        next if value.nil?
+
+        @pc_chosen_colors[i] = value
+      end
+      # puts "@pc_chosen_colors = #{@pc_chosen_colors}"
       @user_chosen_colors == @pc_chosen_colors ? break : print_round_results_computer
     end
-    puts @user_chosen_colors == @pc_chosen_colors ? 'You lost!' : 'You Win!'
+    puts @user_chosen_colors == @pc_chosen_colors ? 'You lost!' : "You Win! You chose #{@user_chosen_colors}"
   end
 
   def print_round_results_computer
-    puts
-    print 'user: '
-    p @user_chosen_colors
-    puts
-    print 'pc: '
-    p @pc_chosen_colors
-    # puts
-    puts "Guess: \n\n#{@guess} \n\n Try again\n\n"
+    # puts "\nuser: "
+    # p @user_chosen_colors
+    # print "\npc: "
+    # p @pc_chosen_colors
+    puts "Computer guess: \n\n#{@pc_chosen_colors} \n\n"
     @guess = []
     @pc_chosen_colors = []
     @aux_pc_chosen_colors = []
